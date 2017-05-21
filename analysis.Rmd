@@ -59,37 +59,37 @@ Anything else we should remove?
 nearZeroVar(train)
 ```
 
-All the remaining variables are significant, so we are ready to build predictive models.
+All the remaining variables are significant.
+
+Before building predictive models, we set aside a `testingSet` (since the provided test data is missing the `"classe"` column).
+
+```{r}
+trainIndex <- createDataPartition(train$classe, p = .9,list = FALSE)
+trainingSet <- train[trainIndex,]
+testingSet<- train[-trainIndex,]
+```
+
+We are ready to build predictive models!
 
 ## Building a Random Forest
 
 We first build a model via a generic random forest algorithm.
 
-We use the `train` function from the `caret` library to build a random forest (`model="rf"`) on the `train` dataset. We set a cross-validation via the `method="cv"` in the `control` parameter. (The number of fold in the cross-validation is the default, i.e., `10`).
+We use the `train` function from the `caret` library to build a random forest (`model="rf"`) on the `trainingSet` dataset. We set a cross-validation via the `method="cv"` in the `control` parameter. (The number of fold in the cross-validation is the default, i.e., `10`).
 
-```{r,eval=FALSE}
+```{r}
 control <- trainControl(method="cv")
-fitRF<-train(classe~.,data=train,model="rf",trControl=control)
+fitRF<-train(classe~.,data=trainingSet,model="rf",trControl=control)
 ```
 
-## Checking the model on the `train` set
+## Cross-validating the model
 
-We predict on the training set, and build a confusion matrix.
+To have an out-of-sample cross-validation of the model, we build a confusion matrix for the `testingSet` (that we haven't used in the `train` function)
 
 ```{r}
-predictions<-predict(fitRF,train)
-confusionMatrix(predictions, train[,"classe"])
+predictions<-predict(fitRF,testingSet)
+confusionMatrix(predictions, testingSet[,"classe"])
 ```
 
-The `Accuracy` of our model on the training set is `1`. So there is no point in trying to improve the accuracy via a different model.
 
-The high accuracy of our model suggests that we may be over-fitting. Hence, it's time to use the `test` data to check our model.
-
-## Predictions on the `test` set
-
-```{r}
-predict(fitRF,test)
-```
-
-After entering the values in the coursera Quizz, we get 100% of correct answers, so the out-of-sample error must be rather small.
-
+Hence, the out-of-sample accurary is `0.9969` :-)
