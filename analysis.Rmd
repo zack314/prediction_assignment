@@ -15,8 +15,8 @@ We load the `caret` library and get the data:
 library(caret)
 urlTrain<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
 urlTest<-"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
-download.file(urlTrain,"train.csv",method="curl")
-download.file(urlTest,"test.csv",method="curl")
+download.file(urlTrain,"train.csv",method="curl",quiet=TRUE)
+download.file(urlTest,"test.csv",method="curl",quiet=TRUE)
 trainSave<-read.csv("train.csv",na.strings=c("NA",""))
 testSave<-read.csv("test.csv",na.strings=c("NA",""))
 train<-trainSave
@@ -26,7 +26,7 @@ test<-testSave
 ## Cleaning the Data
 
 We find all completely empty columns from the dataset and remove them.
-Then we scan `train` and `test` to find any remaining `NA` entires:
+Then we scan `train` and `test` to find any remaining `NA` entries:
 
 ```{r}
 naColumns<-which(as.vector(colSums(is.na(test)))==nrow(test))
@@ -38,9 +38,8 @@ which(as.vector(colSums(is.na(test)))>0 | as.vector(colSums(is.na(train)))>0)
 Since there aren't any remaining `NA` entries, we can continue.
 
 After looking at the output of `str(train)`, we decide to remove the following columns from the dataset
-```{r}
-X,user_name,raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp,new_window,num_window
-```
+
+`X,user_name,raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp,new_window,num_window`
 
 `X` is just an index, `user_name` identifies the participant, and the `*time*` and `*window*` features should not influence the activity class.
 
@@ -60,7 +59,7 @@ Anything else we should remove?
 nearZeroVar(train)
 ```
 
-All the remaining variables are significant, se we are ready to build predictive models.
+All the remaining variables are significant, so we are ready to build predictive models.
 
 ## Building a Random Forest
 
@@ -68,9 +67,9 @@ We first build a model via a generic random forest algorithm.
 
 We use the `train` function from the `caret` library to build a random forest (`model="rf"`) on the `train` dataset. We set a cross-validation via the `method="cv"` in the `control` parameter. (The number of fold in the cross-validation is the default, i.e., `10`).
 
-```{r}
+```{r,eval=FALSE}
 control <- trainControl(method="cv")
-fitRF<-train(classe~.,data=train,model="rf",trControl=control, verboseIter=TRUE)
+fitRF<-train(classe~.,data=train,model="rf",trControl=control)
 ```
 
 ## Checking the model on the `train` set
@@ -84,7 +83,7 @@ confusionMatrix(predictions, train[,"classe"])
 
 The `Accuracy` of our model on the training set is `1`. So there is no point in trying to improve the accuracy via a different model.
 
-The high accuracy of our model suggests that we may be overfitting. Hence, it's time to use the `test` data to check our model.
+The high accuracy of our model suggests that we may be over-fitting. Hence, it's time to use the `test` data to check our model.
 
 ## Predictions on the `test` set
 
