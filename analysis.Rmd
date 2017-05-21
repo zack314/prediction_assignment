@@ -93,3 +93,11 @@ confusionMatrix(predictions, testingSet[,"classe"])
 
 
 Hence, the out-of-sample accurary is `0.9969` :-)
+
+## Prediction on the `test` data
+
+```{r}
+predict(fitRF,test)
+```
+
+(That's a 100% accuracy once submitted to the Quizz)
