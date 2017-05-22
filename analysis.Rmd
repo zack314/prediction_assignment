@@ -79,12 +79,31 @@ We use the `train` function from the `caret` library to build a random forest (`
 
 ```{r}
 control <- trainControl(method="cv")
-fitRF<-train(classe~.,data=trainingSet,model="rf",trControl=control)
+classeIndex<-which(names(train)=="classe")
+fitRF<-train(trainingSet[,-classeIndex],trainingSet[,classeIndex],model="rf",trControl=control)
 ```
 
-## Cross-validating the model
+## Cross-validating the model / out-of-sample error
 
-To have an out-of-sample cross-validation of the model, we build a confusion matrix for the `testingSet` (that we haven't used in the `train` function)
+We are going to consider two kinds of error measurements:
+
+1. The accuracy from the 10-fold cross-validation (which was performed automatically by the `train` function with the `"cv"` control-parameter).
+
+2. The accuracy from the manual data split that we did (we split `train` into a `trainingSet` and a `testingSet`).
+ 
+### 10-fold cross validation
+
+Let us first look at the accuracy automatically computed via the cross-validation (=the `"cv"` parameter)
+
+```{r}
+print(fitRF)
+```
+
+The highest 10-fold cross-validation accuracy of `0.994734` was obtained with the tuning parameter `mtry=2` (=number of variables randomly sampled as candidates at each split).
+
+### Data-Split
+
+To have a truly "out-of-sample" measurement of the error, let us compare the cross-validation accuracy to that of a simple data-split. I.e., we build the confusion matrix for the prediction of our model vs. the `testingSet` (that we haven't used in the `train` function)
 
 ```{r}
 predictions<-predict(fitRF,testingSet)
@@ -92,7 +111,7 @@ confusionMatrix(predictions, testingSet[,"classe"])
 ```
 
 
-Hence, the out-of-sample accurary is `0.9969` :-)
+Hence, the out-of-sample accuracy computed via data split is `0.9939` (very close to the `0.994734` obtained via cross-validation).
 
 ## Prediction on the `test` data
 
